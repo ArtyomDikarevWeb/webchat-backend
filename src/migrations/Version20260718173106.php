@@ -25,7 +25,7 @@ final class Version20260718173106 extends AbstractMigration
             text TEXT NOT NULL, 
             created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT now(),
             updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT now(),
-            deleted_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
+            deleted_at TIMESTAMP(0) WITHOUT TIME ZONE,
             PRIMARY KEY (chat_id, user_id, created_at)
         ) PARTITION BY RANGE (created_at)');
     }

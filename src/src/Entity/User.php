@@ -7,10 +7,11 @@ use App\Enum\UserRole;
 use App\Repository\UserRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\Uuid;
+use Ramsey\Uuid\Rfc4122\UuidInterface;
+use Ramsey\Uuid\Uuid;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
+#[ORM\Table(name: '`users`')]
 class User
 {
     #[ORM\Id]
@@ -18,8 +19,9 @@ class User
     #[ORM\Column(type: 'bigint')]
     private ?int $id;
 
-    #[ORM\Column(type: UuidType::NAME, unique: true)]
-    private ?Uuid $uuid;
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'uuid', unique: true, insertable: false)]
+    private ?string $uuid = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $username;
@@ -30,13 +32,13 @@ class User
     #[ORM\Column(type: 'string', length: 255)]
     private string $password;
 
-    #[Orm\Column(enumType: UserRole::class)]
+    #[Orm\Column(enumType: UserRole::class, insertable: false)]
     private UserRole $role;
 
-    #[Orm\Column(type: 'datetime_immutable')]
+    #[Orm\Column(type: 'datetime_immutable', insertable: false)]
     private ?DateTimeImmutable $createdAt = null;
 
-    #[Orm\Column(type: 'datetime_immutable')]
+    #[Orm\Column(type: 'datetime_immutable', insertable: false)]
     private ?DateTimeImmutable $updatedAt = null;
 
     #[Orm\Column(type: 'datetime_immutable')]
@@ -47,7 +49,7 @@ class User
         return $this->id;
     }
 
-    public function getUuid(): ?Uuid
+    public function getUuid(): ?string
     {
         return $this->uuid;
     }
@@ -79,7 +81,7 @@ class User
 
     public function setEmail(string $email): void
     {
-        $this->username = $email;
+        $this->email = $email;
     }
 
     public function getRole(): UserRole
