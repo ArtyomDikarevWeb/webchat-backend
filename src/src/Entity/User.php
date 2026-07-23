@@ -34,13 +34,13 @@ class User
     private UserRole $role;
 
     #[Orm\Column(type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[Orm\Column(type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[Orm\Column(type: 'datetime_immutable')]
-    private DateTimeImmutable $deletedAt;
+    private ?DateTimeImmutable $deletedAt = null;
 
     public function getId(): ?int
     {
@@ -92,17 +92,17 @@ class User
         $this->role = $role;
     }
 
-    public function getCreatedAt(): DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function getDeletedAt(): DateTimeImmutable
+    public function getDeletedAt(): ?DateTimeImmutable
     {
         return $this->deletedAt;
     }
