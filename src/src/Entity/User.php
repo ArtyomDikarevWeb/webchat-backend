@@ -7,10 +7,9 @@ use App\Enum\UserRole;
 use App\Repository\UserRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Rfc4122\UuidInterface;
-use Ramsey\Uuid\Uuid;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: '`users`')]
 class User
 {
@@ -112,5 +111,13 @@ class User
     public function setDeletedAt(DateTimeImmutable $deletedAt): void
     {
         $this->deletedAt = $deletedAt;
+    }
+
+    #[ORM\PrePersist]
+    public function setDefaultRole(): void
+    {
+        if (!isset($this->role)) {
+            $this->role = UserRole::User;
+        }
     }
 }
