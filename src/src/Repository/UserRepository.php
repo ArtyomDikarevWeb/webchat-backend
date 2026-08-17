@@ -7,13 +7,19 @@ use App\DTO\UserDTO;
 use App\Enum\UserRole;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 /**
  * @extends ServiceEntityRepository<User>
  */
 class UserRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(
+        ManagerRegistry $registry,
+        private UserPasswordHasherInterface $passwordHasher
+    )
     {
         parent::__construct($registry, User::class);
     }
@@ -22,11 +28,22 @@ class UserRepository extends ServiceEntityRepository
     {
         $user = new User();
         $user->setUsername($userDto->username);
-        $user->setPassword($userDto->password);
+        $hashedPassword = $this->passwordHasher->hashPassword($user, $userDto->password);
+        $user->setPassword($hashedPassword);
         $user->setEmail($userDto->email);
 
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
+    }
+
+    public function getAllUsers()
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = 'SELECT * FROM users';
+
+        $resultSet = $conn->executeQuery($sql);
+
+        return $resultSet->fetchAllAssociative();
     }
 
     //    /**
@@ -53,4 +70,15 @@ class UserRepository extends ServiceEntityRepository
                ->getOneOrNullResult()
            ;
        }
+
+    public function loadUserByIdentifier(string $identifier): UserInterface
+    {
+        $user = $this->findOneBy(['username' => $identifier]);
+        
+        if (!$user) {
+            throw new UserNotFoundException(sprintf('User with username "%s" not found.', $identifier));
+        }
+        
+        return $user;
+    }
 }

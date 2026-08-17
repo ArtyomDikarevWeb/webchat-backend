@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class UserController
 {
-    #[Route('/api/register', methods: ['POST'], name: 'register')]
+    #[Route('/api/register', methods: ['POST'], name: 'users.register')]
     public function register(Request $request, UserRepository $userRepository): JsonResponse
     {
         $email = $request->getPayload()->get("email");
@@ -22,5 +22,10 @@ class UserController
         $userRepository->create($userDTO);
 
         return new JsonResponse(['success' => true], 204);
+    }
+
+    public function refreshToken()
+    {
+
     }
 }

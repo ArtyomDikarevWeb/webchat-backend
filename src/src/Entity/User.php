@@ -7,41 +7,43 @@ use App\Enum\UserRole;
 use App\Repository\UserRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: '`users`')]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'bigint')]
-    private ?int $id;
+    public ?int $id;
 
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'uuid', unique: true, insertable: false)]
-    private ?string $uuid = null;
+    public ?string $uuid = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $username;
+    public string $username;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $email;
+    public string $email;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $password;
+    public string $password;
 
     #[Orm\Column(enumType: UserRole::class, insertable: false)]
-    private UserRole $role;
+    public UserRole $role;
 
     #[Orm\Column(type: 'datetime_immutable', insertable: false)]
-    private ?DateTimeImmutable $createdAt = null;
+    public ?DateTimeImmutable $createdAt = null;
 
     #[Orm\Column(type: 'datetime_immutable', insertable: false)]
-    private ?DateTimeImmutable $updatedAt = null;
+    public ?DateTimeImmutable $updatedAt = null;
 
     #[Orm\Column(type: 'datetime_immutable')]
-    private ?DateTimeImmutable $deletedAt = null;
+    public ?DateTimeImmutable $deletedAt = null;
 
     public function getId(): ?int
     {
@@ -70,7 +72,7 @@ class User
 
     public function setPassword(string $password): void
     {
-        $this->password = hash('sha256', $password);
+        $this->password = $password;
     }
 
     public function getEmail(): string
@@ -86,6 +88,16 @@ class User
     public function getRole(): UserRole
     {
         return $this->role;
+    }
+
+    public function getRoles(): array
+    {
+        return [UserRole::User];
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->username;
     }
 
     public function setRole(UserRole $role): void
