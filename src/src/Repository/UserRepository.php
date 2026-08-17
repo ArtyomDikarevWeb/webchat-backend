@@ -7,6 +7,8 @@ use App\DTO\UserDTO;
 use App\Enum\UserRole;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
@@ -18,7 +20,8 @@ class UserRepository extends ServiceEntityRepository
 {
     public function __construct(
         ManagerRegistry $registry,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
+        private LoggerInterface $log,
     )
     {
         parent::__construct($registry, User::class);
@@ -26,14 +29,31 @@ class UserRepository extends ServiceEntityRepository
 
     public function create(UserDTO $userDto)
     {
-        $user = new User();
-        $user->setUsername($userDto->username);
-        $hashedPassword = $this->passwordHasher->hashPassword($user, $userDto->password);
-        $user->setPassword($hashedPassword);
-        $user->setEmail($userDto->email);
+        try {
+            $entityManager = $this->getEntityManager();
+            $user = new User();
+            $user->setUsername($userDto->username);
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $userDto->password);
+            $user->setPassword($hashedPassword);
+            $user->setEmail($userDto->email);
 
-        $this->getEntityManager()->persist($user);
-        $this->getEntityManager()->flush();
+            $entityManager->persist($user);
+            $entityManager->flush();
+        } catch (\Error $e) {
+            $this->log->critical("User was not saved", [
+                "inputData" => [
+                    "username" => $userDto->username, 
+                    "hashedPassword" => $hashedPassword,
+                    "password" => $userDto->password,
+                    "email" => $userDto->email,
+                ],
+                "exceptionData" => [
+                    "message" => $e->getMessage(),
+                    "code" => $e->getCode(),
+                ], 
+            ]);
+            throw new HttpException(500, 'User was not saved');
+        }
     }
 
     public function getAllUsers()
