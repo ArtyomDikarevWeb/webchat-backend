@@ -7,47 +7,50 @@ use App\Enum\UserRole;
 use App\Repository\UserRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
-class User
+#[ORM\HasLifecycleCallbacks]
+#[ORM\Table(name: '`users`')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'bigint')]
-    private ?int $id;
+    public ?int $id;
 
-    #[ORM\Column(type: UuidType::NAME, unique: true)]
-    private ?Uuid $uuid;
-
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $username;
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'uuid', unique: true, insertable: false)]
+    public ?string $uuid = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $email;
+    public string $username;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $password;
+    public string $email;
 
-    #[Orm\Column(enumType: UserRole::class)]
-    private UserRole $role;
+    #[ORM\Column(type: 'string', length: 255)]
+    public string $password;
+
+    #[Orm\Column(enumType: UserRole::class, insertable: false)]
+    public UserRole $role;
+
+    #[Orm\Column(type: 'datetime_immutable', insertable: false)]
+    public ?DateTimeImmutable $createdAt = null;
+
+    #[Orm\Column(type: 'datetime_immutable', insertable: false)]
+    public ?DateTimeImmutable $updatedAt = null;
 
     #[Orm\Column(type: 'datetime_immutable')]
-    private ?DateTimeImmutable $createdAt = null;
-
-    #[Orm\Column(type: 'datetime_immutable')]
-    private ?DateTimeImmutable $updatedAt = null;
-
-    #[Orm\Column(type: 'datetime_immutable')]
-    private ?DateTimeImmutable $deletedAt = null;
+    public ?DateTimeImmutable $deletedAt = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUuid(): ?Uuid
+    public function getUuid(): ?string
     {
         return $this->uuid;
     }
@@ -69,7 +72,7 @@ class User
 
     public function setPassword(string $password): void
     {
-        $this->password = hash('sha256', $password);
+        $this->password = $password;
     }
 
     public function getEmail(): string
@@ -79,12 +82,22 @@ class User
 
     public function setEmail(string $email): void
     {
-        $this->username = $email;
+        $this->email = $email;
     }
 
     public function getRole(): UserRole
     {
         return $this->role;
+    }
+
+    public function getRoles(): array
+    {
+        return [UserRole::User];
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->username;
     }
 
     public function setRole(UserRole $role): void
@@ -110,5 +123,13 @@ class User
     public function setDeletedAt(DateTimeImmutable $deletedAt): void
     {
         $this->deletedAt = $deletedAt;
+    }
+
+    #[ORM\PrePersist]
+    public function setDefaultRole(): void
+    {
+        if (!isset($this->role)) {
+            $this->role = UserRole::User;
+        }
     }
 }

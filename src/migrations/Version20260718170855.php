@@ -26,7 +26,7 @@ final class Version20260718170855 extends AbstractMigration
             name varchar(225) DEFAULT NULL,
             created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT now(),
             updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT now(),
-            deleted_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
+            deleted_at TIMESTAMP(0) WITHOUT TIME ZONE,
             PRIMARY KEY (id)
         )');
     }

@@ -26,7 +26,7 @@ final class Version20260718171901 extends AbstractMigration
             role chat_participant_role_type NOT NULL DEFAULT \'chat_user\',
             created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT now(),
             updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT now(),
-            deleted_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
+            deleted_at TIMESTAMP(0) WITHOUT TIME ZONE,
             PRIMARY KEY (chat_id, user_id)
         )');
     }
